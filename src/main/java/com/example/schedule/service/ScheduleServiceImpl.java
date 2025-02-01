@@ -20,12 +20,11 @@ public class ScheduleServiceImpl implements ScheduleService{
     }
 
     @Override
-    public ScheduleResponseDto saveSchedule(ScheduleRequestDto dto) {
+    public ScheduleResponseDto createSchedule(ScheduleRequestDto dto) {
 
         //요청받은 데이터로 Schedule 객체 생성
-        Schedule schedule = new Schedule(dto.getTitle(), dto.getContents(), dto.getAuthor(), dto.getPassword());
-        Schedule savedSchedule = scheduleRepository.saveSchedule(schedule);
-        return new ScheduleResponseDto(savedSchedule);
+        Schedule schedule = new Schedule(dto.getTitle(), dto.getContents(), dto.getAuthor(), dto.getPassword(), dto.getCreated_at());
+        return scheduleRepository.createSchedule(schedule);
     }
 
     @Override
@@ -59,7 +58,7 @@ public class ScheduleServiceImpl implements ScheduleService{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
         }
 
-        scheduleById.update(title,contents,author,password);
+        //scheduleById.update(title,contents,author,password,upated_at);
 
         return new ScheduleResponseDto(scheduleById);
     }
@@ -76,7 +75,7 @@ public class ScheduleServiceImpl implements ScheduleService{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
         }
 
-        scheduleById.updateTitle(title,author,password);
+        //scheduleById.updateTitle(title,author,password);
 
         return new ScheduleResponseDto(scheduleById);
     }
