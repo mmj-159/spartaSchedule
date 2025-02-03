@@ -6,9 +6,11 @@ import com.example.schedule.entity.Schedule;
 import com.example.schedule.repository.ScheduleRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ScheduleServiceImpl implements ScheduleService{
@@ -23,7 +25,7 @@ public class ScheduleServiceImpl implements ScheduleService{
     public ScheduleResponseDto createSchedule(ScheduleRequestDto dto) {
 
         //요청받은 데이터로 Schedule 객체 생성
-        Schedule schedule = new Schedule(dto.getTitle(), dto.getContents(), dto.getAuthor(), dto.getPassword(), dto.getCreated_at());
+        Schedule schedule = new Schedule(dto.getAuthor(), dto.getTitle(), dto.getContents(), dto.getPassword(), dto.getCreated_at());
         return scheduleRepository.createSchedule(schedule);
     }
 
@@ -37,57 +39,72 @@ public class ScheduleServiceImpl implements ScheduleService{
     @Override
     public ScheduleResponseDto findScheduleById(Long id) {
 
-        Schedule scheduleById = scheduleRepository.findScheduleById(id);
+        Optional<Schedule> scheduleById = scheduleRepository.findScheduleById(id);
 
-        if (scheduleById == null) {
+        if (scheduleById.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Does not exist id = " + id);
         }
-        return new ScheduleResponseDto(scheduleById);
+        return new ScheduleResponseDto(scheduleById.get());
     }
 
+    @Transactional
     @Override
-    public ScheduleResponseDto updateSchedule(Long id, String title, String contents, String author, String password) {
-
-        Schedule scheduleById = scheduleRepository.findScheduleById(id);
-
-        if (scheduleById == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Does not exist id = " + id);
-        }
-
+    public ScheduleResponseDto updateSchedule(Long id, String author, String title, String contents, String password) {
         if (title == null || contents == null || author == null || password == null){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
         }
 
-        //scheduleById.update(title,contents,author,password,upated_at);
+        int updatedRow= scheduleRepository.updateSchedule(id, author, title, contents, password);
 
-        return new ScheduleResponseDto(scheduleById);
+        if (updatedRow == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Does not exist id = " + id);
+        }
+        Optional<Schedule> optionalSchedule = scheduleRepository.findScheduleById(id);
+
+        return new ScheduleResponseDto(optionalSchedule.get());
     }
 
     @Override
-    public ScheduleResponseDto updateTitle(Long id, String title, String contents, String author, String password) {
-        Schedule scheduleById = scheduleRepository.findScheduleById(id);
+    public ScheduleResponseDto updateTitle(Long id, String author, String title, String contents,  String password) {
 
-        if (scheduleById == null) {
+        int updateRow = scheduleRepository.updateTitle(id, author, title, password);
+
+        if (title == null || contents != null || author == null || password == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title is required values.");
+        }
+
+        if (updateRow == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Does not exist id = " + id);
         }
 
-        if (title == null || contents != null || author == null || password == null){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The title and contents are required values.");
+        Optional<Schedule> optionalSchedule = scheduleRepository.findScheduleById(id);
+
+        return new ScheduleResponseDto(optionalSchedule.get());
+    }
+
+    @Override
+    public ScheduleResponseDto updateContents(Long id, String author, String title, String contents, String password) {
+        int updateRow = scheduleRepository.updateContents(id, author, contents, password);
+
+        if (title != null || contents == null || author == null || password == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The contents are required values.");
         }
 
-        //scheduleById.updateTitle(title,author,password);
+        if (updateRow == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Does not exist id = " + id);
+        }
 
-        return new ScheduleResponseDto(scheduleById);
+        Optional<Schedule> optionalSchedule = scheduleRepository.findScheduleById(id);
+
+        return new ScheduleResponseDto(optionalSchedule.get());
+
     }
 
     @Override
     public void deleteSchedule(Long id) {
-        Schedule scheduleById = scheduleRepository.findScheduleById(id);
-
-        if (scheduleById == null) {
+        int deleteRow = scheduleRepository.deleteSchedule(id);
+        if (deleteRow == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Does not exist id = " + id);
         }
-
-        scheduleRepository.deleteSchedule(id);
     }
 }

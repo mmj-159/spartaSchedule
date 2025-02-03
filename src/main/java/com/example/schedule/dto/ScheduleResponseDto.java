@@ -10,19 +10,21 @@ import java.util.Date;
 @AllArgsConstructor
 public class ScheduleResponseDto {
     private Long id;
+    private  String author;
     private String title;
     private String contents;
-    private  String author;
     private String password;
     private Date created_at;
     private Date updated_at;
 
     public ScheduleResponseDto(Schedule schedule){
         this.id = schedule.getId();
-        this.password = schedule.getPassword();
         this.author = schedule.getAuthor();
         this.title = schedule.getTitle();
         this.contents = schedule.getContents();
+        this.password = schedule.getPassword();
+        this.created_at = schedule.getCreated_at();
+        this.updated_at = schedule.getUpdated_at();
     }
 
 }
